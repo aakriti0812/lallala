@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>For you</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Permanent+Marker&family=Special+Elite&family=Nunito:wght@800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1d1d1d;--red:#e0483f}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font-family:'Nunito',sans-serif;font-weight:800;color:var(--ink);text-align:center;overflow:hidden;background-color:#e9e8e4;
+ background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='500' height='500'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='.012 .02' numOctaves='4' seed='7'/><feDiffuseLighting lighting-color='%23fff' surfaceScale='2.2'><feDistantLight azimuth='45' elevation='58'/></feDiffuseLighting></filter><rect width='500' height='500' filter='url(%23f)'/></svg>");background-size:500px}
+.screen{display:none;position:absolute;inset:0;padding:30px 18px;align-items:center;justify-content:center;justify-content:safe center;gap:16px;flex-direction:column;overflow:auto}
+.screen.on{display:flex}
+.dots{position:fixed;top:10px;left:14px;display:flex;gap:2px;z-index:4}
+.dots i{width:20px;height:20px;border-radius:50%;background:#111}
+h1{font-family:'Permanent Marker',cursive;font-weight:400;font-size:2.6rem;margin:0;transform:rotate(-4deg)}
+p{margin:0;font-size:1.1rem}
+.tilt{transform:rotate(-4deg)}
+.btn{font:inherit;border:0;border-radius:999px;padding:9px 28px;background:#3a3a3a;color:#fff;cursor:pointer;font-size:1rem;box-shadow:0 3px 0 #000}
+.btn:active{transform:translateY(2px);box-shadow:none}
+.row{display:flex;gap:16px}
+.cat{font-size:4rem;line-height:1}
+.cat img,.cat svg{height:110px;width:auto;animation:bounce 2.2s ease-in-out infinite}
+@keyframes bounce{50%{transform:translateY(-6px) rotate(2deg)}}
+@media (prefers-reduced-motion:reduce){.cat img,.cat svg{animation:none}}
+.icons{display:flex;gap:18px}
+.icon{width:92px;height:92px;border:5px solid var(--ink);border-radius:20px;background:none;padding:14px;cursor:pointer;transition:transform .15s}
+.icon:hover{transform:rotate(-5deg) scale(1.05)}
+.icon svg{width:100%;height:100%;fill:none;stroke:var(--ink);stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round}
+.x{position:fixed;top:12px;right:14px;width:40px;height:40px;border-radius:50%;border:3px solid var(--ink);background:#fff;font-size:1.3rem;font-weight:800;cursor:pointer;z-index:6;padding:0;line-height:1}
+.x[hidden]{display:none}
+
+/* scrapbook layout */
+.board{display:flex;gap:18px;width:100%;max-width:820px;align-items:center;justify-content:center}
+@media(max-width:560px){.board{flex-direction:column}}
+.note{position:relative;background:#faf6ea;padding:22px 20px;box-shadow:0 5px 14px #0003;font-family:'Caveat',cursive;font-weight:700;font-size:1.25rem;line-height:1.2;text-align:center;white-space:pre-line;flex:1;max-height:78vh;overflow:auto;transform:rotate(-1.5deg)}
+.note.rope{border:6px double #a98866}
+.note::before{content:"";position:absolute;top:-10px;left:18%;width:76px;height:22px;background:#e8c568cc;transform:rotate(-8deg)}
+.note::after{content:"🌼🍂";position:absolute;top:-16px;right:6px;font-size:1.8rem}
+.frames{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:min(230px,60vh);flex:none}
+.frame{background:#111;padding:6px;box-shadow:0 4px 10px #0004;transform:rotate(-2deg)}
+.frame:nth-child(even){transform:rotate(2deg)}
+.frame div{aspect-ratio:3/4;background:#777 center/cover}
+.hand{position:absolute;left:-10px;top:0;bottom:0;width:70px;background:repeating-linear-gradient(#f5ecd0 0 18px,#d9c99a 19px);transform:rotate(-3deg);opacity:.85;z-index:-1}
+
+/* song window */
+.win{width:240px;flex:none;background:#fff;border:3px solid #6aa0d8;box-shadow:0 4px 12px #0003;font-family:'Special Elite',monospace}
+.win b{display:block;background:#6aa0d8;color:#123;padding:6px;font-size:.75rem;line-height:1.3;font-weight:400}
+.win{width:min(260px,70vw)}
+.songlink[hidden]{display:none}
+.songlink{display:block;background:#6aa0d8;color:#123;padding:8px;text-decoration:none;font-size:.8rem}
+.polar{width:min(260px,70vw);background:#fff;padding:10px 10px 12px;box-shadow:0 5px 14px #0004;transform:rotate(-3deg)}
+.polar img{display:block;width:100%;height:min(330px,50vh);object-fit:cover;background:#ddd}
+.polar span{display:block;margin-top:8px;font-family:'Caveat',cursive;font-size:1.4rem}
+.note.poem{font-size:clamp(.95rem,2.8vh,1.3rem);line-height:1.25;max-width:430px;max-height:86vh}
+.bow{position:absolute;font-size:3rem;transform:rotate(-20deg);left:-18px;top:-26px}
+.winwrap{position:relative}
+.scribble{font-size:2.4rem;position:absolute;top:-24px;right:-10px}
+
+/* film strip video */
+.film{background:#1b1b1b;padding:10px 22px;position:relative;width:max(150px,min(230px,32vh));flex:none;transform:rotate(-4deg);box-shadow:0 4px 12px #0005}
+.film::before,.film::after{content:"";position:absolute;top:6px;bottom:6px;width:10px;background:repeating-linear-gradient(#fff 0 12px,transparent 12px 22px);border-radius:2px}
+.film::before{left:6px}.film::after{right:6px}
+.films{display:flex;flex-direction:column;gap:18px;flex:none}
+.film video{width:100%;display:block;aspect-ratio:1/1;object-fit:contain;background:#000}
+.film:nth-child(even){transform:rotate(3deg)}
+.nextbtn{position:fixed;bottom:16px;right:16px;z-index:5}
+.heartbg{position:absolute;right:20px;bottom:10px;font-size:5rem;opacity:.5;z-index:-1}
+
+.hrt{position:fixed;bottom:-30px;pointer-events:none;animation:up 4s linear forwards;z-index:9}
+@keyframes up{to{transform:translateY(-110vh) rotate(30deg);opacity:0}}
+@media (prefers-reduced-motion:reduce){.hrt{display:none}}
+</style>
+</head>
+<body>
+<div class="dots"><i></i><i></i><i></i><i></i><i></i></div>
+
+<section class="screen on" id="hello">
+  <h1>Hello my love!</h1>
+  <p class="tilt">Ready to see what's inside?</p>
+  <div class="row"><button class="btn" id="yes">Yes!</button><button class="btn" id="no">No, Thanks</button></div>
+</section>
+
+<section class="screen" id="please">
+  <div class="cat" id="cat"></div>
+  <p class="tilt" id="plead" style="font-size:1.3rem"></p>
+  <button class="btn" id="okay">Okay, fine</button>
+</section>
+
+<section class="screen" id="menu">
+  <div class="cat" id="cat2"></div>
+  <p class="tilt" style="font-size:1.3rem">Yay! Thank you, love!</p>
+  <p class="tilt" style="font-family:'Permanent Marker';font-weight:400;letter-spacing:1px">TAP TO SEE WHAT'S INSIDE</p>
+  <div class="icons">
+    <button class="icon" data-go="photos" aria-label="Photos"><svg viewBox="0 0 48 48"><rect x="5" y="14" width="38" height="26" rx="4"/><path d="M16 14l3-5h10l3 5"/><circle cx="24" cy="27" r="8"/></svg></button>
+    <button class="icon" data-go="songS" aria-label="Poem"><svg viewBox="0 0 48 48"><path d="M24 41S7 30 7 18a9 9 0 0117-4 9 9 0 0117 4c0 12-17 23-17 23z"/></svg></button>
+    <button class="icon" data-go="letterS" aria-label="Letter"><svg viewBox="0 0 48 48"><rect x="5" y="11" width="38" height="26" rx="3"/><path d="M6 13l18 14 18-14"/></svg></button>
+  </div>
+  <p class="tilt">I hope you'll like it 💛</p>
+</section>
+
+<section class="screen" id="photos">
+  <div class="board">
+    <div class="frames" id="frames"></div>
+    <div class="note rope" id="photoNote" style="font-size:1.1rem"></div>
+  </div>
+</section>
+
+<section class="screen" id="songS">
+  <div class="board">
+    <div class="winwrap"><div class="bow">🎀</div>
+      <div class="polar"><img id="poemImg" alt=""><span id="poemCap"></span></div></div>
+    <div class="note poem" id="songNote"></div>
+    <div class="scribble">🖤</div>
+  </div>
+</section>
+
+<section class="screen" id="letterS">
+  <div class="board">
+    <div class="films" id="films"></div>
+    <div class="note" id="letter" style="font-size:1.1rem"></div>
+    <div class="heartbg">❤️</div>
+  </div>
+  <button class="btn nextbtn" id="nextLetter">Next letter ✉️ →</button>
+</section>
+
+<section class="screen" id="letter2S">
+  <div class="board">
+    <div class="note" id="letter2" style="max-width:560px"></div>
+  </div>
+</section>
+
+<button class="x" id="x" hidden aria-label="Close">✕</button>
+
+<script>
+/* ============ EDIT THIS PART ============ */
+const CONFIG = {
+  catImage: "",   // optional: file name of your cat sticker (png). Leave "" for emoji
+  photos: ["photo1.jpg","photo2.jpg","photo3.jpg","photo4.jpg"],
+  photoNote: "When I see your photos and hear your voice, I get completely lost, and I don't know what to say. But there is one thing I want you to know: maybe I'm not perfect for you, and maybe I'm not the kind of girl you wanted, but I am trying my best. All I want is for you to be happy, and I'm afraid I may not always be able to make you happy. You are someone I never want to lose. In the future, I want to marry you, have a child with you, and spend my whole life with you.\n\nI wrote a shayari for you:\nNazron ke saamne band aankho ka khwaab ho tum,\nMere har ankahe sawal ka khubsoorat jawaab ho tum.\nKe tujhko sochun toh bas sochta hi jaaun,\nIs bikhri hui zindagi mein sukoon ki wo kitab ho tum.",
+  poemPhoto: "1.jpg",     // the picture beside the poem (put your own file name here)
+  poemCaption: "forever yours",
+  songNote: "For You, My Love\n\nIn a world that moves too fast,\nyou are the place where time slows down.\nYour voice is my favorite quiet,\nyour smile, the home I never had to look for.\n\nI don't have perfect words,\nonly a heart that finds its way to you\nin every ordinary moment,\nevery sunrise, every goodnight.\n\nIf I could choose a thousand times,\nin a thousand lives,\nI would still choose you,\ntoday, tomorrow, and always.\n\nHappy Boyfriend Day ❤️",   // the poem / letter text
+  videos: ["video1.mp4","video2.mp4"],   // your videos (same folder). Add more or use [] to hide
+  letter2: "One more thing, my love... If you love someone else, just tell me that you love someone else, don't cheat me okay. And if you lost insterest on me, just tell me okay but don't ignore me it hurts. And \n\nThank you for every laugh, every late-night talk, and every little moment that made me fall for you more. I'm so proud of you, and I'm so happy that I get to love you.\n\nNo matter what, I'll always be on your side.\n\nForever yours ❤️",
+  letter: "I know I have an anger issue. Sometimes I didn't trust you and I doubted you too much, but you don't know how much I love you. I haven't shown my love to you enough.\n\nMy love, I just want to take a moment to tell you how much you truly mean to me. Being with you feels like home.\n\nI appreciate you for all the little things you do, even the ones you don't realize. You make my world so much brighter just by being in it, and I feel so lucky to call you mine.\n\nHappy Boyfriend Day ❤️"
+};
+/* ======================================== */
+const $ = s => document.querySelector(s);
+const SUBS = ['photos','songS','letterS','letter2S'];
+
+function catSVG(mood){
+  const sad = mood === 'sad';
+  const eyes = sad
+    ? `<ellipse cx="42" cy="62" rx="7.5" ry="9" fill="#222"/><ellipse cx="78" cy="62" rx="7.5" ry="9" fill="#222"/>
+       <circle cx="44.5" cy="58.5" r="3" fill="#fff"/><circle cx="80.5" cy="58.5" r="3" fill="#fff"/><circle cx="39.5" cy="65" r="1.4" fill="#fff"/><circle cx="75.5" cy="65" r="1.4" fill="#fff"/>
+       <path d="M38 72 q-4 12 -1 24 M82 72 q4 12 1 24" stroke="#5ec4e8" stroke-width="5" fill="none" stroke-linecap="round"/>`
+    : `<path d="M34 64 q8 -11 16 0 M70 64 q8 -11 16 0" stroke="#222" stroke-width="3.5" fill="none" stroke-linecap="round"/>`;
+  const mouth = sad
+    ? `<path d="M53 82 q7 -6 14 0" stroke="#222" stroke-width="3" fill="none" stroke-linecap="round"/>`
+    : `<path d="M51 78 q9 12 18 0z" fill="#e87a8a" stroke="#222" stroke-width="2.5" stroke-linejoin="round"/>`;
+  return `<svg viewBox="0 0 120 112" role="img" aria-label="cute cat">
+    <polygon points="20,44 26,6 56,28" fill="#f2994a" stroke="#222" stroke-width="3" stroke-linejoin="round"/>
+    <polygon points="100,44 94,6 64,28" fill="#fff" stroke="#222" stroke-width="3" stroke-linejoin="round"/>
+    <polygon points="28,34 30,17 45,27" fill="#f6b1b9"/><polygon points="92,34 90,17 75,27" fill="#f6b1b9"/>
+    <ellipse cx="60" cy="64" rx="49" ry="40" fill="#fff"/>
+    <path d="M12 64 C12 42 30 26 54 24 C47 40 45 54 30 76 C18 76 12 72 12 64Z" fill="#f2994a"/>
+    <ellipse cx="60" cy="64" rx="49" ry="40" fill="none" stroke="#222" stroke-width="3"/>
+    ${eyes}
+    <ellipse cx="27" cy="78" rx="8" ry="5" fill="#f58a9b" opacity=".55"/><ellipse cx="93" cy="78" rx="8" ry="5" fill="#f58a9b" opacity=".55"/>
+    <polygon points="55.5,71 64.5,71 60,76.5" fill="#e87a8a" stroke="#222" stroke-width="1.5" stroke-linejoin="round"/>
+    ${mouth}
+    <path d="M8 70 l14 2 M8 80 l14 -3 M112 70 l-14 2 M112 80 l-14 -3" stroke="#222" stroke-width="2" stroke-linecap="round"/>
+  </svg>`;
+}
+function setCat(id, mood){
+  $('#'+id).innerHTML = CONFIG.catImage ? `<img src="${CONFIG.catImage}" alt="">` : catSVG(mood);
+}
+setCat('cat','sad'); setCat('cat2','happy');
+function show(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === id));
+  $('#x').hidden = !SUBS.includes(id);
+  if (id !== 'letterS') document.querySelectorAll('#films video').forEach(v => v.pause());
+}
+const pleas = ["Awww! Give it a go, please?","Pretty please? 🥺","I made it just for you..."];
+let n = 0;
+$('#yes').onclick = () => show('menu');
+$('#no').onclick = () => { n = 0; $('#plead').textContent = pleas[0]; show('please'); };
+$('#cat').onclick = () => { n = (n+1) % pleas.length; $('#plead').textContent = pleas[n]; };
+$('#okay').onclick = () => show('menu');
+const seen = new Set();
+document.querySelectorAll('.icon').forEach(b => b.onclick = () => {
+  seen.add(b.dataset.go); show(b.dataset.go);
+  if (seen.size === 3) setTimeout(hearts, 400);
+});
+$('#x').onclick = () => show('menu');
+CONFIG.photos.forEach(src => { const f = document.createElement('div'); f.className = 'frame'; f.innerHTML = '<div></div>'; f.firstChild.style.backgroundImage = `url("${src}")`; $('#frames').appendChild(f); });
+$('#photoNote').textContent = CONFIG.photoNote;
+$('#songNote').textContent = CONFIG.songNote;
+$('#letter').textContent = CONFIG.letter;
+$('#letter2').textContent = CONFIG.letter2;
+$('#nextLetter').onclick = () => show('letter2S');
+$('#poemImg').src = CONFIG.poemPhoto;
+$('#poemCap').textContent = CONFIG.poemCaption;
+CONFIG.videos.forEach(src => { const f = document.createElement('div'); f.className = 'film'; f.innerHTML = '<video controls playsinline preload="metadata"></video>'; f.firstChild.src = src + '#t=0.1'; $('#films').appendChild(f); });
+if (!CONFIG.videos.length) $('#films').remove();
+function hearts(){ for (let i = 0; i < 24; i++) setTimeout(() => { const h = document.createElement('div'); h.className = 'hrt'; h.textContent = '❤️'; h.style.left = Math.random()*100 + 'vw'; h.style.fontSize = 18 + Math.random()*22 + 'px'; document.body.appendChild(h); setTimeout(() => h.remove(), 4000); }, i*120); }
+</script>
+</body>
+</html>
